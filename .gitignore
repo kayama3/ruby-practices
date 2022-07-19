@@ -2,6 +2,8 @@
 
 # Ruby.gitignore ****************************
 
+fizzbuzz.rb
+
 *.gem
 *.rbc
 /.config
