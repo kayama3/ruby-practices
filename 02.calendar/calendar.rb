@@ -10,17 +10,19 @@ OptionParser.new do |opt|
   opt.parse!(ARGV)
 end
 
-# yearとmonthの条件分岐
-if option[:y] && option[:m]
+# yearに変数を代入
+if option[:y]
   year = option[:y]
-  month = option[:m]
-elsif option[:m]
+else
   now = Date.today
   year = now.year
+end
+
+# monthに変数を代入
+if option[:m]
   month = option[:m]
-else  
+else
   now = Date.today
-  year = now.year
   month = now.month
 end
 
@@ -36,14 +38,8 @@ puts "Su Mo Tu We Th Fr Sa"
 space = first_day.wday * 3 
 print " " * space 
 
-# 初日から９日まで表示
-(first_day..first_day + 8).each{|d|
-  print " #{d.day} " 
+# 初日から最終日まで表示
+(first_day..last_day).each do |d|
+  print "#{d.day} ".rjust(3)
   print "\n" if d.saturday?
-}
-
-# １０日から最終日まで表示
-(first_day + 9.. last_day).each{|d|
-  print "#{d.day} "
-  print "\n" if d.saturday?
-}
+end
