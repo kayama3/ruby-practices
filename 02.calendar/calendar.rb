@@ -10,20 +10,22 @@ OptionParser.new do |opt|
   opt.parse!(ARGV)
 end
 
+now = Date.today
+
 # yearに変数を代入
+year = 
 if option[:y]
-  year = option[:y]
+  option[:y]
 else
-  now = Date.today
-  year = now.year
+  now.year
 end
 
 # monthに変数を代入
+month =
 if option[:m]
-  month = option[:m]
+  option[:m]
 else
-  now = Date.today
-  month = now.month
+  now.month
 end
 
 # 月の初日と最終日の設定
