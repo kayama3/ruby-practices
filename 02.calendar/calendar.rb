@@ -10,173 +10,38 @@ OptionParser.new do |opt|
   opt.parse!(ARGV)
 end
 
-# 年と月が指定された場合の動作
-if option[:y] && option[:m]
-  year = option[:y]
-  month = option[:m]
-  first = Date.new(year.to_i, month.to_i, 1)
-  last = Date.new(year.to_i, month.to_i, -1)
+now = Date.today
 
-  # 月、年、曜日を表示
-  print "       ",first.strftime('%b'), " ", first.strftime('%Y')
-  puts "\nSu Mo Tu We Th Fr Sa"
+# yearに変数を代入
+year = 
+if option[:y]
+  option[:y]
+else
+  now.year
+end
 
-  # 初日を表示
-  if first.sunday? == true && first == Date.today
-    print "\e[7m#{first.strftime('%e')}\e[0m", " "
-  elsif first.sunday? == true
-    print first.strftime('%e'), " "
-  elsif first.monday? == true && first == Date.today
-    print "   ", "\e[7m#{first.strftime('%e')}\e[0m", " "
-  elsif first.monday? == true
-    print "   ", first.strftime('%e'), " "
-  elsif first.tuesday? == true && first == Date.today
-    print "      ", "\e[7m#{first.strftime('%e')}\e[0m", " "
-  elsif first.tuesday? == true
-    print "      ", first.strftime('%e'), " "
-  elsif first.wednesday? == true && first == Date.today
-    print "         ", "\e[7m#{first.strftime('%e')}\e[0m", " "
-  elsif first.wednesday? == true
-    print "         ", first.strftime('%e'), " "
-  elsif first.thursday? == true && first == Date.today
-    print "            ", "\e[7m#{first.strftime('%e')}\e[0m", " "
-  elsif first.thursday? == true
-    print "            ", first.strftime('%e'), " "
-  elsif first.friday? == true && first == Date.today
-    print "               ", "\e[7m#{first.strftime('%e')}\e[0m", " "
-  elsif first.friday? == true
-    print "               ", first.strftime('%e'), " "
-  elsif first.saturday? == true && first == Date.today
-    print "                  ", "\e[7m#{first.strftime('%e')}\e[0m", " "
-  elsif first.saturday? == true
-    print "                  ", first.strftime('%e'), "\n"
-  end
+# monthに変数を代入
+month =
+if option[:m]
+  option[:m]
+else
+  now.month
+end
 
-  # 初日以降を表示
-  while first < last
-    first += 1
-    if first == Date.today && first.saturday? == true
-      print  "\e[7m#{first.strftime('%e')}\e[0m", "\n"
-    elsif first == Date.today
-      print  "\e[7m#{first.strftime('%e')}\e[0m", " "
-    elsif first.saturday? == true 
-      print first.strftime('%e'), "\n"
-    elsif
-      print first.strftime('%e'), " "
-    end
-  end
+# 月の初日と最終日の設定
+first_day = Date.new(year.to_i, month.to_i, 1)
+last_day = Date.new(year.to_i, month.to_i, -1)
 
-# 月のみ指定した場合の動作
-elsif option[:m]
-  now = Date.today
-  year = now.year
-  month = option[:m]
-  first = Date.new(year.to_i, month.to_i, 1)
-  last = Date.new(year.to_i, month.to_i, -1)
+# 月、年、曜日を表示
+puts "       #{month} #{year}"
+puts "Su Mo Tu We Th Fr Sa"
 
-  # 月、年、曜日を表示
-  print "       ",first.strftime('%b'), " ", first.strftime('%Y')
-  puts "\nSu Mo Tu We Th Fr Sa"
+# 初日の前に空白を表示
+space = first_day.wday * 3 
+print " " * space 
 
-  # 初日を表示
-  if first.sunday? == true && first == Date.today
-    print "\e[7m#{first.strftime('%e')}\e[0m", " "
-  elsif first.sunday? == true
-    print first.strftime('%e'), " "
-  elsif first.monday? == true && first == Date.today
-    print "   ", "\e[7m#{first.strftime('%e')}\e[0m", " "
-  elsif first.monday? == true
-    print "   ", first.strftime('%e'), " "
-  elsif first.tuesday? == true && first == Date.today
-    print "      ", "\e[7m#{first.strftime('%e')}\e[0m", " "
-  elsif first.tuesday? == true
-    print "      ", first.strftime('%e'), " "
-  elsif first.wednesday? == true && first == Date.today
-    print "         ", "\e[7m#{first.strftime('%e')}\e[0m", " "
-  elsif first.wednesday? == true
-    print "         ", first.strftime('%e'), " "
-  elsif first.thursday? == true && first == Date.today
-    print "            ", "\e[7m#{first.strftime('%e')}\e[0m", " "
-  elsif first.thursday? == true
-    print "            ", first.strftime('%e'), " "
-  elsif first.friday? == true && first == Date.today
-    print "               ", "\e[7m#{first.strftime('%e')}\e[0m", " "
-  elsif first.friday? == true
-    print "               ", first.strftime('%e'), " "
-  elsif first.saturday? == true && first == Date.today
-    print "                  ", "\e[7m#{first.strftime('%e')}\e[0m", " "
-  elsif first.saturday? == true
-    print "                  ", first.strftime('%e'), "\n"
-  end
-
-  # 初日以降を表示
-  while first < last
-    first += 1
-    if first == Date.today && first.saturday? == true
-      print  "\e[7m#{first.strftime('%e')}\e[0m", "\n"
-    elsif first == Date.today
-      print  "\e[7m#{first.strftime('%e')}\e[0m", " "
-    elsif first.saturday? == true 
-      print first.strftime('%e'), "\n"
-    elsif
-      print first.strftime('%e'), " "
-    end
-  end
-
-# 年と月を指定しない場合の動作
-elsif
-  now = Date.today
-  year = now.year
-  month = now.month
-  first = Date.new(year, month, 1)
-  last = Date.new(year, month, -1)
-
-  # 月、年、曜日を表示
-  print "       ",now.strftime('%b'), " ", now.strftime('%Y')
-  puts "\nSu Mo Tu We Th Fr Sa"
-
-  # 初日を表示
-  if first.sunday? == true && first == Date.today
-    print "\e[7m#{first.strftime('%e')}\e[0m", " "
-  elsif first.sunday? == true
-    print first.strftime('%e'), " "
-  elsif first.monday? == true && first == Date.today
-    print "   ", "\e[7m#{first.strftime('%e')}\e[0m", " "
-  elsif first.monday? == true
-    print "   ", first.strftime('%e'), " "
-  elsif first.tuesday? == true && first == Date.today
-    print "      ", "\e[7m#{first.strftime('%e')}\e[0m", " "
-  elsif first.tuesday? == true
-    print "      ", first.strftime('%e'), " "
-  elsif first.wednesday? == true && first == Date.today
-    print "         ", "\e[7m#{first.strftime('%e')}\e[0m", " "
-  elsif first.wednesday? == true
-    print "         ", first.strftime('%e'), " "
-  elsif first.thursday? == true && first == Date.today
-    print "            ", "\e[7m#{first.strftime('%e')}\e[0m", " "
-  elsif first.thursday? == true
-    print "            ", first.strftime('%e'), " "
-  elsif first.friday? == true && first == Date.today
-    print "               ", "\e[7m#{first.strftime('%e')}\e[0m", " "
-  elsif first.friday? == true
-    print "               ", first.strftime('%e'), " "
-  elsif first.saturday? == true && first == Date.today
-    print "                  ", "\e[7m#{first.strftime('%e')}\e[0m", " "
-  elsif first.saturday? == true
-    print "                  ", first.strftime('%e'), "\n"
-  end
-
-  # 初日以降を表示
-  while first < last
-    first += 1
-    if first == Date.today && first.saturday? == true
-      print  "\e[7m#{first.strftime('%e')}\e[0m", "\n"
-    elsif first == Date.today
-      print  "\e[7m#{first.strftime('%e')}\e[0m", " "
-    elsif first.saturday? == true 
-      print first.strftime('%e'), "\n"
-    elsif
-      print first.strftime('%e'), " "
-    end
-  end
+# 初日から最終日まで表示
+(first_day..last_day).each do |d|
+  print "#{d.day} ".rjust(3)
+  print "\n" if d.saturday?
 end
