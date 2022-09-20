@@ -3,11 +3,11 @@
 
 current_directory = Dir.glob('*')
 current_directory << ' ' while current_directory.size % 3 != 0
+MAX_COLUM = current_directory.size / 3
 
 def sort(current_directory)
   items = []
-  column = current_directory.size / 3
-  current_directory.each_slice(column) { |n| items << n }
+  current_directory.each_slice(MAX_COLUM) { |n| items << n }
   items.transpose.flatten
 end
 
