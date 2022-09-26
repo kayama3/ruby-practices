@@ -1,13 +1,16 @@
 # /usr/bin/env ruby
 # frozen_string_literal: true
 
-current_directory = Dir.glob('*')
+require 'optparse'
+params = ARGV.getopts('a')
+
+current_directory = params['a'] ? Dir.glob('*', File::FNM_DOTMATCH) : Dir.glob('*')
 current_directory << ' ' while current_directory.size % 3 != 0
-MAX_COLUMN = current_directory.size / 3
+MAX_NUMBER_OF_COLUMNS = current_directory.size / 3
 
 def sort(current_directory)
   items = []
-  current_directory.each_slice(MAX_COLUMN) { |n| items << n }
+  current_directory.each_slice(MAX_NUMBER_OF_COLUMNS) { |n| items << n }
   items.transpose.flatten
 end
 
