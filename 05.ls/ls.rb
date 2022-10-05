@@ -5,7 +5,7 @@ require 'optparse'
 params = ARGV.getopts('r')
 
 current_directory = Dir.glob('*')
-params["r"] ? current_directory.reverse! : current_directory
+params['r'] ? current_directory.reverse! : current_directory
 current_directory << ' ' while current_directory.size % 3 != 0
 MAX_NUMBER_OF_COLUMNS = current_directory.size / 3
 
