@@ -58,9 +58,10 @@ end
 
 def output_with_option_l(current_directory, spaces, fyle_type, permission, half_year)
   current_directory.each do |n|
+    count = 0
     fs = File.lstat(n)
-    split_fs = fs.mode.to_s(8).split('')
-    split_fs.insert(0, '0') if split_fs.size == 5
+    fs_mode = fs.mode.to_s(8)
+    fs_mode.insert(0, '0') if fs_mode.size == 5
 
     nlink = fs.nlink.to_s.rjust(spaces[:nlink_space] + 2)
     user_name = Etc.getpwuid(fs.uid).name.rjust(spaces[:user_name_space] + 1)
@@ -68,20 +69,17 @@ def output_with_option_l(current_directory, spaces, fyle_type, permission, half_
     size = fs.size.to_s.rjust(spaces[:file_size_space] + 2)
     time = Time.now - half_year < fs.mtime ? fs.mtime.strftime('%b %e %R') : fs.mtime.strftime('%b %e  %Y')
 
-    fyle_type.each { |key, value| print value if split_fs[0] + split_fs[1] == key }
-    permission.each do |key, value|
-      if split_fs[3] == key # owner
-        print split_fs[2] == '4' ? value.sub(/x$|-$/, 'x' => 's', '-' => 'S') : value # SUID
-      end
-    end
-    permission.each do |key, value|
-      if split_fs[4] == key # group
-        print split_fs[2] == '2' ? value.sub(/x$|-$/, 'x' => 's', '-' => 'S') : value # SGID
-      end
-    end
-    permission.each do |key, value|
-      if split_fs[5] == key # other
-        print split_fs[2] == '1' ? value.sub(/x$|-$/, 'x' => 't', '-' => 'T') : value # スティッキービット
+    print fyle_type[fs_mode[0..1]] # ファイルタイプの出力
+    fs_mode[3, 3].each_char do |char| # パーミッションの出力
+      count += 1
+      if fs_mode[2] == '4' && count == 1
+        print permission[char].sub(/x$|-$/, 'x' => 's', '-' => 'S')
+      elsif fs_mode[2] == '2' && count == 2
+        print permission[char].sub(/x$|-$/, 'x' => 's', '-' => 'S')
+      elsif fs_mode[2] == '1' && count == 3
+        print permission[char].sub(/x$|-$/, 'x' => 't', '-' => 'T')
+      else
+        print permission[char]
       end
     end
 
