@@ -33,144 +33,108 @@ end
 
 def blocks(current_directory)
   total_blocks = 0
-  current_directory.each { |n| total_blocks += File.lstat(n).blocks }
+  current_directory.each { |data| total_blocks += File.lstat(data).blocks }
   puts "total #{total_blocks}"
 end
 
-def fyle_type(current_directory, data)
+def fyle_type(results, file_mode)
   fyle_type = { '01' => 'p', '02' => 'c', '04' => 'd', '06' => 'b', '10' => '-', '12' => 'l', '14' => 's' }
-
-  current_directory.each do |n|
-    fs = File.lstat(n)
-    fs_mode = fs.mode.to_s(8)
-    fs_mode.insert(0, '0') if fs_mode.size == 5
-    data << fyle_type[fs_mode[0..1]] # ファイルタイプの出力
-  end
+  results << fyle_type[file_mode[0..1]] # ファイルタイプの出力
 end
 
-def permission(current_directory, data)
+def permission(results, file_mode)
   permission = { '0' => '---', '1' => '--x', '2' => '-w-', '3' => '-wx', '4' => 'r--', '5' => 'r-x', '6' => 'rw-', '7' => 'rwx' }
-  permission_data = []
+  count = 0
 
-  current_directory.each do |n|
-    count = 0
-    fs = File.lstat(n)
-    fs_mode = fs.mode.to_s(8)
-    fs_mode.insert(0, '0') if fs_mode.size == 5
-
-    fs_mode[3, 3].each_char do |char| # パーミッションの出力
-      count += 1
-      permission_data << if fs_mode[2] == '4' && count == 1
-                           permission[char].sub(/x$|-$/, 'x' => 's', '-' => 'S')
-                         elsif fs_mode[2] == '2' && count == 2
-                           permission[char].sub(/x$|-$/, 'x' => 's', '-' => 'S')
-                         elsif fs_mode[2] == '1' && count == 3
-                           permission[char].sub(/x$|-$/, 'x' => 't', '-' => 'T')
-                         else
-                           permission[char]
-                         end
-    end
-  end
-  permission_data.each_slice(3) { |n| data << n.join }
-end
-
-def nlink(current_directory, spaces, data)
-  nlinks = []
-  current_directory.each do |n|
-    fs = File.lstat(n)
-    nlinks << fs.nlink.to_s
-  end
-  spaces[:nlink_space] = nlinks.map(&:size).max
-
-  current_directory.each do |n|
-    fs = File.lstat(n)
-    nlink = fs.nlink.to_s.rjust(spaces[:nlink_space] + 2)
-    data << nlink
+  file_mode[3, 3].each_char do |char| # パーミッションの出力
+    count += 1
+    results << if file_mode[2] == '4' && count == 1
+                 permission[char].sub(/x$|-$/, 'x' => 's', '-' => 'S')
+               elsif file_mode[2] == '2' && count == 2
+                 permission[char].sub(/x$|-$/, 'x' => 's', '-' => 'S')
+               elsif file_mode[2] == '1' && count == 3
+                 permission[char].sub(/x$|-$/, 'x' => 't', '-' => 'T')
+               else
+                 permission[char]
+               end
   end
 end
 
-def user_name(current_directory, spaces, data)
-  user_names = []
-  current_directory.each do |n|
-    fs = File.lstat(n)
-    user_names << Etc.getpwuid(fs.uid).name
-  end
-  spaces[:user_name_space] = user_names.map(&:size).max
-
-  current_directory.each do |n|
-    fs = File.lstat(n)
-    user_name = Etc.getpwuid(fs.uid).name.rjust(spaces[:user_name_space] + 1)
-    data << user_name
-  end
+def nlink(spaces, results, file_stat)
+  nlink = file_stat.nlink.to_s.rjust(spaces[:nlink_space] + 2)
+  results << nlink
 end
 
-def group_name(current_directory, spaces, data)
-  group_names = []
-  current_directory.each do |n|
-    fs = File.lstat(n)
-    group_names << Etc.getgrgid(fs.gid).name
-  end
-  spaces[:group_name_space] = group_names.map(&:size).max
-
-  current_directory.each do |n|
-    fs = File.lstat(n)
-    group_name = Etc.getgrgid(fs.gid).name.rjust(spaces[:group_name_space] + 2)
-    data << group_name
-  end
+def user_name(spaces, results, file_stat)
+  user_name = Etc.getpwuid(file_stat.uid).name.rjust(spaces[:user_name_space] + 1)
+  results << user_name
 end
 
-def file_size(current_directory, spaces, data)
-  file_sizes = []
-  current_directory.each do |n|
-    fs = File.lstat(n)
-    file_sizes << fs.size.to_s
-  end
-  spaces[:file_size_space] = file_sizes.map(&:size).max
-
-  current_directory.each do |n|
-    fs = File.lstat(n)
-    size = fs.size.to_s.rjust(spaces[:file_size_space] + 2)
-    data << size
-  end
+def group_name(spaces, results, file_stat)
+  group_name = Etc.getgrgid(file_stat.gid).name.rjust(spaces[:group_name_space] + 2)
+  results << group_name
 end
 
-def update_time(current_directory, data)
+def file_size(spaces, results, file_stat)
+  size = file_stat.size.to_s.rjust(spaces[:file_size_space] + 2)
+  results << size
+end
+
+def update_time(results, file_stat)
   half_year = (60 * 60 * 24 * 182.5)
-  current_directory.each do |n|
-    fs = File.lstat(n)
-    time = Time.now - half_year < fs.mtime ? fs.mtime.strftime('%b %e %R') : fs.mtime.strftime('%b %e  %Y')
-    data << " #{time}"
-  end
+  time = Time.now - half_year < file_stat.mtime ? file_stat.mtime.strftime('%b %e %R') : file_stat.mtime.strftime('%b %e  %Y')
+  results << " #{time}"
 end
 
-def file_name(current_directory, data)
-  current_directory.each { |n| data << " #{n}" }
+def file_name(results, data)
+  results << " #{data}"
+end
+
+def kinds_of_spaces(current_directory, spaces)
+  nlinks = []
+  user_names = []
+  group_names = []
+  file_sizes = []
+
+  current_directory.each do |data|
+    file_stat = File.lstat(data)
+
+    spaces[:nlink_space] = nlinks.map(&:size).max
+    spaces[:user_name_space] = user_names.map(&:size).max
+    spaces[:group_name_space] = group_names.map(&:size).max
+    spaces[:file_size_space] = file_sizes.map(&:size).max
+
+    nlinks << file_stat.nlink.to_s
+    user_names << Etc.getpwuid(file_stat.uid).name
+    group_names << Etc.getgrgid(file_stat.gid).name
+    file_sizes << file_stat.size.to_s
+  end
 end
 
 def output_with_option_l
   current_directory = input
   spaces = {}
-  data = []
   results = []
 
+  kinds_of_spaces(current_directory, spaces)
   blocks(current_directory)
-  fyle_type(current_directory, data)
-  permission(current_directory, data)
-  nlink(current_directory, spaces, data)
-  user_name(current_directory, spaces, data)
-  group_name(current_directory, spaces, data)
-  file_size(current_directory, spaces, data)
-  update_time(current_directory, data)
-  file_name(current_directory, data)
 
-  data.each_slice(current_directory.size) { |n| results << n }
+  current_directory.each do |data|
+    file_stat = File.lstat(data)
+    file_mode = file_stat.mode.to_s(8)
+    file_mode.insert(0, '0') if file_mode.size == 5
 
-  count = 0
-  results.transpose.flatten.each do |n|
-    count += 1
-    print n
-    print "\n" if (count % 8).zero?
+    fyle_type(results, file_mode)
+    permission(results, file_mode)
+    nlink(spaces, results, file_stat)
+    user_name(spaces, results, file_stat)
+    group_name(spaces, results, file_stat)
+    file_size(spaces, results, file_stat)
+    update_time(results, file_stat)
+    file_name(results, data)
   end
+
+  results.each_slice(10) { |n| puts n.join }
 end
 
 main
