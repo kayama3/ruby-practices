@@ -96,20 +96,20 @@ def file_name(content_of_current_directories)
   " #{content_of_current_directories}"
 end
 
-def size_of_sapaces(current_directory)
-  size_of_sapaces = {}
-  size_of_sapaces[:nlink_space] = current_directory.map { |n| File.lstat(n).nlink.to_s.size }.max
-  size_of_sapaces[:user_name_space] = current_directory.map { |n| Etc.getpwuid(File.lstat(n).uid).name.size }.max
-  size_of_sapaces[:group_name_space] = current_directory.map { |n| Etc.getgrgid(File.lstat(n).gid).name.size }.max
-  size_of_sapaces[:file_size_space] = current_directory.map { |n| File.lstat(n).size.to_s.size }.max
+def size_of_spaces(current_directory)
+  size_of_spaces = {}
+  size_of_spaces[:nlink_space] = current_directory.map { |n| File.lstat(n).nlink.to_s.size }.max
+  size_of_spaces[:user_name_space] = current_directory.map { |n| Etc.getpwuid(File.lstat(n).uid).name.size }.max
+  size_of_spaces[:group_name_space] = current_directory.map { |n| Etc.getgrgid(File.lstat(n).gid).name.size }.max
+  size_of_spaces[:file_size_space] = current_directory.map { |n| File.lstat(n).size.to_s.size }.max
 
-  size_of_sapaces
+  size_of_spaces
 end
 
 def output_with_option_l
   current_directory = input
   results = []
-  space = size_of_sapaces(current_directory)
+  space = size_of_spaces(current_directory)
 
   puts_total_blocks(current_directory)
 
