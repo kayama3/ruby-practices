@@ -5,17 +5,17 @@ require 'etc'
 require 'optparse'
 
 def main
-  params = ARGV.getopts('l')
-  params['l'] ? output_with_option_l : output
+  params = ARGV.getopts('alr')
+  params['l'] ? output_with_option_l(params) : output(params)
 end
 
-def input
-  Dir.glob('*')
+def input(params)
+  params['a'] ? Dir.glob('*', File::FNM_DOTMATCH) : Dir.glob('*')
 end
 
-def output
+def output(params)
   content_of_current_directories = []
-  current_directory = input
+  current_directory = params['r'] ? input(params).reverse : input(params)
   number_of_columns = 3
 
   current_directory << ' ' while current_directory.size % number_of_columns != 0
@@ -106,8 +106,8 @@ def size_of_spaces(current_directory)
   size_of_spaces
 end
 
-def output_with_option_l
-  current_directory = input
+def output_with_option_l(params)
+  current_directory = params['r'] ? input(params).reverse : input(params)
   results = []
   space = size_of_spaces(current_directory)
 
