@@ -21,7 +21,7 @@ def number_of_bytes(argf)
 end
 
 def file_name
-  " #{ARGF.filename}".delete("\-")
+  " #{ARGF.filename}"
 end
 
 def print_lines_words_bytes(argf)
@@ -46,11 +46,26 @@ end
 
 def total_lines_words_bytes(params, total_lines_words_bytes)
   calc_total_lines_words_bytes = total_lines_words_bytes.each_slice(3).to_a.transpose.map { |array| array.inject(:+) }
-  ary = [params.keys, calc_total_lines_words_bytes].transpose
+  options_key = params.keys
+  options_key_order = %w[l w c]
+  sorted_options_key = options_key.sort_by { |x| options_key_order.index(x[0]) }
+
+  ary = [sorted_options_key, calc_total_lines_words_bytes].transpose
   Hash[*ary.flatten]
 end
 
 def print_total_lines_words_bytes(params, total_lines_words_bytes)
+  total_lines = total_lines_words_bytes(params, total_lines_words_bytes)['l'].to_s.rjust(8)
+  total_words = total_lines_words_bytes(params, total_lines_words_bytes)['w'].to_s.rjust(8)
+  total_bytes = total_lines_words_bytes(params, total_lines_words_bytes)['c'].to_s.rjust(8)
+
+  print total_lines
+  print total_words
+  print total_bytes
+  print ' total'
+end
+
+def print_total_lines_words_bytes_with_options(params, total_lines_words_bytes)
   total_lines = total_lines_words_bytes(params, total_lines_words_bytes)['l'].to_s.rjust(8)
   total_words = total_lines_words_bytes(params, total_lines_words_bytes)['w'].to_s.rjust(8)
   total_bytes = total_lines_words_bytes(params, total_lines_words_bytes)['c'].to_s.rjust(8)
@@ -74,7 +89,13 @@ def output(params)
     end
   end
 
-  print_total_lines_words_bytes(params, total_lines_words_bytes) if ARGF.lineno > 1
+  return unless ARGF.lineno > 1
+
+  if params.values.any? == false
+    print_total_lines_words_bytes(params, total_lines_words_bytes)
+  else
+    print_total_lines_words_bytes_with_options(params, total_lines_words_bytes)
+  end
 end
 
 main
