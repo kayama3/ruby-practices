@@ -28,14 +28,14 @@ def print_lines_words_bytes(argf)
   print number_of_lines(argf)
   print number_of_words(argf)
   print number_of_bytes(argf)
-  print file_name == " -" ? "\n" : "#{file_name}\n"
+  print file_name == ' -' ? "\n" : "#{file_name}\n"
 end
 
 def print_lines_words_bytes_with_options(argf, params)
   print number_of_lines(argf) if params['l']
   print number_of_words(argf) if params['w']
   print number_of_bytes(argf) if params['c']
-  print file_name == " -" ? "\n" : "#{file_name}\n"
+  print file_name == ' -' ? "\n" : "#{file_name}\n"
 end
 
 def get_total_lines_words_bytes(argf, total_lines_words_bytes)
