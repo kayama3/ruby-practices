@@ -3,99 +3,97 @@
 
 require 'optparse'
 
-def main
-  params = ARGV.getopts('clw')
-  output(params)
+params = ARGV.getopts('clw')
+OPTIONS_KEY = params.keys
+OPTIONS_KEY_ORDER = %w[l w c].freeze
+
+def main(params)
+  input = input()
+  file_name = input.keys.map { |x| x == '-' ? ' ' : " #{x}" }
+  file_contents = input.values
+
+  lines = number_of_lines(file_contents)
+  words = number_of_words(file_contents)
+  bytes = number_of_bytes(file_contents)
+
+  elements = elements(lines, words, bytes, file_name)
+  elements_with_options = elements_with_options(lines, words, bytes, file_name, params)
+
+  calc_total_elements = calc_total_elements(lines, words, bytes)
+  total_elements = total_elements(calc_total_elements)
+  total_elements_with_options = total_elements_with_options(params, calc_total_elements)
+
+  output(elements, elements_with_options, total_elements, total_elements_with_options, params)
 end
 
-def number_of_lines(argf)
-  argf.count("\n").to_s.rjust(8)
-end
-
-def number_of_words(argf)
-  argf.scan(/[^\s]+/).length.to_s.rjust(8)
-end
-
-def number_of_bytes(argf)
-  argf.bytesize.to_s.rjust(8)
-end
-
-def file_name
-  " #{ARGF.filename}"
-end
-
-def print_lines_words_bytes(argf)
-  print number_of_lines(argf)
-  print number_of_words(argf)
-  print number_of_bytes(argf)
-  print file_name == ' -' ? "\n" : "#{file_name}\n"
-end
-
-def print_lines_words_bytes_with_options(argf, params)
-  print number_of_lines(argf) if params['l']
-  print number_of_words(argf) if params['w']
-  print number_of_bytes(argf) if params['c']
-  print file_name == ' -' ? "\n" : "#{file_name}\n"
-end
-
-def get_total_lines_words_bytes(argf, total_lines_words_bytes)
-  total_lines_words_bytes.push(number_of_lines(argf).to_i,
-                               number_of_words(argf).to_i,
-                               number_of_bytes(argf).to_i)
-end
-
-def total_lines_words_bytes(params, total_lines_words_bytes)
-  calc_total_lines_words_bytes = total_lines_words_bytes.each_slice(3).to_a.transpose.map { |array| array.inject(:+) }
-  options_key = params.keys
-  options_key_order = %w[l w c]
-  sorted_options_key = options_key.sort_by { |x| options_key_order.index(x[0]) }
-
-  ary = [sorted_options_key, calc_total_lines_words_bytes].transpose
-  Hash[*ary.flatten]
-end
-
-def print_total_lines_words_bytes(params, total_lines_words_bytes)
-  total_lines = total_lines_words_bytes(params, total_lines_words_bytes)['l'].to_s.rjust(8)
-  total_words = total_lines_words_bytes(params, total_lines_words_bytes)['w'].to_s.rjust(8)
-  total_bytes = total_lines_words_bytes(params, total_lines_words_bytes)['c'].to_s.rjust(8)
-
-  print total_lines
-  print total_words
-  print total_bytes
-  print ' total'
-end
-
-def print_total_lines_words_bytes_with_options(params, total_lines_words_bytes)
-  total_lines = total_lines_words_bytes(params, total_lines_words_bytes)['l'].to_s.rjust(8)
-  total_words = total_lines_words_bytes(params, total_lines_words_bytes)['w'].to_s.rjust(8)
-  total_bytes = total_lines_words_bytes(params, total_lines_words_bytes)['c'].to_s.rjust(8)
-
-  print total_lines if params['l']
-  print total_words if params['w']
-  print total_bytes if params['c']
-  print ' total'
-end
-
-def output(params)
-  total_lines_words_bytes = []
-
+def input
+  input = {}
   while (argf = ARGF.gets(nil))
-    get_total_lines_words_bytes(argf, total_lines_words_bytes)
-
-    if params.values.any? == false
-      print_lines_words_bytes(argf)
-    else
-      print_lines_words_bytes_with_options(argf, params)
-    end
+    input[ARGF.filename] = argf
   end
+  input
+end
 
-  return unless ARGF.lineno > 1
+def number_of_lines(file_contents)
+  file_contents.map { |x| x.count("\n").to_s.rjust(8) }
+end
 
-  if params.values.any? == false
-    print_total_lines_words_bytes(params, total_lines_words_bytes)
+def number_of_words(file_contents)
+  file_contents.map { |x| x.scan(/[^\s]+/).length.to_s.rjust(8) }
+end
+
+def number_of_bytes(file_contents)
+  file_contents.map { |x| x.bytesize.to_s.rjust(8) }
+end
+
+def elements(lines, words, bytes, file_name)
+  [lines, words, bytes, file_name].transpose.map(&:join)
+end
+
+def elements_with_options(lines, words, bytes, file_name, params)
+  elements_with_options = []
+  elements_with_options << lines if params['l']
+  elements_with_options << words if params['w']
+  elements_with_options << bytes if params['c']
+  elements_with_options << file_name
+  elements_with_options.transpose.map(&:join)
+end
+
+def calc_total_elements(lines, words, bytes)
+  calc_total_elements = [lines.map(&:to_i).sum, words.map(&:to_i).sum, bytes.map(&:to_i).sum]
+  sorted_options_key = OPTIONS_KEY.sort_by { |x| OPTIONS_KEY_ORDER.index(x[0]) }
+
+  [sorted_options_key, calc_total_elements].transpose.to_h
+end
+
+def total_elements(calc_total_elements)
+  total_lines = calc_total_elements['l'].to_s.rjust(8)
+  total_words = calc_total_elements['w'].to_s.rjust(8)
+  total_bytes = calc_total_elements['c'].to_s.rjust(8)
+
+  "#{total_lines}#{total_words}#{total_bytes} total"
+end
+
+def total_elements_with_options(params, calc_total_elements)
+  total_lines = calc_total_elements['l'].to_s.rjust(8)
+  total_words = calc_total_elements['w'].to_s.rjust(8)
+  total_bytes = calc_total_elements['c'].to_s.rjust(8)
+
+  "#{total_lines if params['l']}#{total_words if params['w']}#{total_bytes if params['c']} total"
+end
+
+def output(elements, elements_with_options, total_elements, total_elements_with_options, params)
+  if params.values.any?
+    puts elements_with_options
+    return unless ARGF.lineno > 1
+
+    puts total_elements_with_options
   else
-    print_total_lines_words_bytes_with_options(params, total_lines_words_bytes)
+    puts elements
+    return unless ARGF.lineno > 1
+
+    puts total_elements
   end
 end
 
-main
+main(params)
