@@ -8,48 +8,58 @@ OPTIONS_KEY = option.keys
 OPTIONS_KEY_ORDER = %w[l w c].freeze
 
 def main(option)
-  sizes_names = input
-  total_sizes = sort_total_sizes(sizes_names)
-  output(sizes_names, total_sizes, option)
+  files = input
+  total_sizes = calc_total_sizes(files)
+  output(files, total_sizes, option)
 end
 
 def input
-  sizes_names = []
+  files = []
   while (argf = ARGF.gets(nil))
-    sizes_names << { lines: argf.count("\n").to_s.rjust(8),
-                     words: argf.scan(/[^\s]+/).length.to_s.rjust(8),
-                     bytes: argf.bytesize.to_s.rjust(8),
-                     name: ARGF.filename == '-' ? ' ' : " #{ARGF.filename}" }
+    files << { line_count: argf.count("\n"),
+               word_count: argf.scan(/[^\s]+/).length,
+               byte_count: argf.bytesize,
+               name: ARGF.filename == '-' ? ' ' : " #{ARGF.filename}" }
   end
-  sizes_names
+  files
 end
 
-def sort_total_sizes(sizes_names)
-  { lines: sizes_names.map { |v| v[:lines].to_i }.sum.to_s.rjust(8),
-    words: sizes_names.map { |v| v[:words].to_i }.sum.to_s.rjust(8),
-    bytes: sizes_names.map { |v| v[:bytes].to_i }.sum.to_s.rjust(8) }
+def calc_total_sizes(files)
+  { line_count: files.sum { |v| v[:line_count].to_i },
+    word_count: files.sum { |v| v[:word_count].to_i },
+    byte_count: files.sum { |v| v[:byte_count].to_i },
+    name: ' total' }
 end
 
-def output(sizes_names, total_sizes, option)
+def output(files, total_sizes, option)
   if option.values.any?
-    sizes_names.each do |file|
-      print file[:lines] if option['l']
-      print file[:words] if option['w']
-      print file[:bytes] if option['c']
-      puts file[:name]
+    files.each do |v|
+      output_count(v, option)
     end
-    return if sizes_names.size == 1
+    return if files.size == 1
 
-    print total_sizes[:lines] if option['l']
-    print total_sizes[:words] if option['w']
-    print total_sizes[:bytes] if option['c']
-    puts ' total'
+    output_count(total_sizes, option)
   else
-    puts(sizes_names.map { |v| v.values.join })
-    return if sizes_names.size == 1
+    files.each do |v|
+      puts v[:line_count].to_s.rjust(8) +
+           v[:word_count].to_s.rjust(8) +
+           v[:byte_count].to_s.rjust(8) +
+           v[:name]
+    end
+    return if files.size == 1
 
-    puts "#{total_sizes.values.join} total"
+    puts total_sizes[:line_count].to_s.rjust(8) +
+         total_sizes[:word_count].to_s.rjust(8) +
+         total_sizes[:byte_count].to_s.rjust(8) +
+         total_sizes[:name]
   end
+end
+
+def output_count(files, option)
+  print files[:line_count].to_s.rjust(8) if option['l']
+  print files[:word_count].to_s.rjust(8) if option['w']
+  print files[:byte_count].to_s.rjust(8) if option['c']
+  puts files[:name]
 end
 
 main(option)
