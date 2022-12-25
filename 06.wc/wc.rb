@@ -5,67 +5,49 @@ require 'optparse'
 
 def main
   option = ARGV.getopts('lwc')
-  files = input(option)
-  total_sizes = calc_total_sizes(files, option)
+  files = input
+  total_sizes = calc_total_sizes(files)
   output(files, total_sizes, option)
 end
 
-def input(option)
+def input
   files = []
   while (argf = ARGF.gets(nil))
     files << { line_count: argf.count("\n"),
                word_count: argf.scan(/[^\s]+/).length,
                byte_count: argf.bytesize,
-               option_l: option['l'] ? argf.count("\n") : nil,
-               option_w: option['w'] ? argf.scan(/[^\s]+/).length : nil,
-               option_c: option['c'] ? argf.bytesize : nil,
-               name: ARGF.filename == '-' ? ' ' : " #{ARGF.filename}" }
+               name: ARGF.filename == '-' ? '' : " #{ARGF.filename}" }
   end
   files
 end
 
-def calc_total_sizes(files, option)
+def calc_total_sizes(files)
   { line_count: files.sum { |v| v[:line_count] },
     word_count: files.sum { |v| v[:word_count] },
     byte_count: files.sum { |v| v[:byte_count] },
-    option_l: option['l'] ? files.sum { |v| v[:option_l] } : nil,
-    option_w: option['w'] ? files.sum { |v| v[:option_w] } : nil,
-    option_c: option['c'] ? files.sum { |v| v[:option_c] } : nil,
     name: ' total' }
 end
 
 def output(files, total_sizes, option)
-  total_sizes[:name] = ' total'
-  if option.values.any?
-    files.each do |v|
-      output_count_options(v)
-    end
-    return if files.size == 1
+  files.each { |v| output_count(v, option) }
+  return if files.size == 1
 
-    output_count_options(total_sizes)
-  else
-    files.each do |v|
-      output_count(v)
-    end
-    return if files.size == 1
-
-    output_count(total_sizes)
-  end
+  output_count(total_sizes, option)
 end
 
-def output_count_options(files)
-  result = [files[:option_l].to_s,
-            files[:option_w].to_s,
-            files[:option_c].to_s]
-  result.delete('')
-
-  puts result.map { |v| v.rjust(8) }.join + files[:name]
+def options(files, option)
+  { l: option['l'] ? files[:line_count].to_s.rjust(8) : '',
+    w: option['w'] ? files[:word_count].to_s.rjust(8) : '',
+    c: option['c'] ? files[:byte_count].to_s.rjust(8) : '',
+    lwc: option.values.any? ? '' : files[:line_count].to_s.rjust(8) + files[:word_count].to_s.rjust(8) + files[:byte_count].to_s.rjust(8) }
 end
 
-def output_count(files)
-  puts files[:line_count].to_s.rjust(8) +
-       files[:word_count].to_s.rjust(8) +
-       files[:byte_count].to_s.rjust(8) +
+def output_count(files, option)
+  view_options = options(files, option)
+  puts view_options[:l] +
+       view_options[:w] +
+       view_options[:c] +
+       view_options[:lwc] +
        files[:name]
 end
 
