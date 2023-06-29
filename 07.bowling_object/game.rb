@@ -25,13 +25,8 @@ class Game
   end
 
   def score
-    game_scores = []
     frames = parse_scores
-    frames.each do |frame|
-      new_frame = Frame.new(frame[0], frame[1], frame[2])
-      game_scores << new_frame.score
-    end
-    game_scores.sum
+    frames.sum(0) { |frame| Frame.new(frame[0], frame[1], frame[2]).score }
   end
 end
 
