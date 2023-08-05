@@ -2,10 +2,33 @@
 
 require_relative 'path'
 
-COLUMN_NUMBER = 3
-
 module LS
   class Command
+    TYPE_TABLE = {
+      '01' => 'p',
+      '02' => 'c',
+      '04' => 'd',
+      '06' => 'b',
+      '10' => '-',
+      '12' => 'l',
+      '14' => 's'
+    }.freeze
+
+    MODE_TABLE = {
+      '0' => '---',
+      '1' => '--x',
+      '2' => '-w-',
+      '3' => '-wx',
+      '4' => 'r--',
+      '5' => 'r-x',
+      '6' => 'rw-',
+      '7' => 'rwx'
+    }.freeze
+
+    HALF_YEAR = 15_768_000
+
+    COLUMN_COUNT = 3.0
+
     def initialize(dotmatch: false, reverse: false, long_format: false)
       @dotmatch = dotmatch
       @reverse = reverse
@@ -13,70 +36,97 @@ module LS
     end
 
     def exec
-      file_paths = collect_paths
-      path_data = file_paths.each.with_object([]) { |file_path, n| n << Path.new(file_path) }
+      path_data = sort_paths.map { |path| Path.new(path) }
       @long_format ? list_long(path_data) : list_short(path_data)
     end
 
     private
 
-    def collect_paths
-      file_paths = @dotmatch ? Dir.glob('*', File::FNM_DOTMATCH) : Dir.glob('*')
-      @reverse ? file_paths.reverse : file_paths
+    def sort_paths
+      @reverse ? collect_paths.reverse : collect_paths
     end
 
-    # lオプションあり
+    def collect_paths
+      @dotmatch ? Dir.glob('*', File::FNM_DOTMATCH) : Dir.glob('*')
+    end
+
     def list_long(path_data)
-      row_data = path_data.map(&:build_data)
-      blocks = row_data.sum { |data| data[:blocks] }
+      detailed_path_data = path_data.map { |path| build_data(path) }
+      blocks = detailed_path_data.sum { |data| data[:blocks] }
       total = "total #{blocks}"
-      body = render_long_format_body(row_data)
+      body = render_long_format_body(detailed_path_data)
       puts [total, *body].join("\n")
     end
 
-    def render_long_format_body(row_data)
-      max_sizes = %i[nlink user group size].map do |key|
-        find_max_size(row_data, key)
-      end
-      row_data.map do |data|
-        format_row(data, *max_sizes)
-      end
+    def build_data(path)
+      file_stat = path.stat
+      file_mode = path.mode
+      {
+        blocks: file_stat.blocks,
+        type: TYPE_TABLE[file_mode[0..1]],
+        mode: format_mode(file_mode),
+        nlink: file_stat.nlink.to_s,
+        user: Etc.getpwuid(file_stat.uid).name,
+        group: Etc.getgrgid(file_stat.gid).name,
+        size: file_stat.size.to_s,
+        mtime: format_mtime(file_stat),
+        name: path.name
+      }
     end
 
-    def find_max_size(row_data, key)
-      row_data.map { |data| data[key].size }.max
+    def format_mode(file_mode)
+      # file_modeの３桁目（特殊権限の値）に応じて、rwx文字列を変化させる
+      [
+        file_mode[2] == '4' ? MODE_TABLE[file_mode[3]].sub(/[x|-]$/, 'x' => 's', '-' => 'S') : MODE_TABLE[file_mode[3]],
+        file_mode[2] == '2' ? MODE_TABLE[file_mode[4]].sub(/[x|-]$/, 'x' => 's', '-' => 'S') : MODE_TABLE[file_mode[4]],
+        file_mode[2] == '1' ? MODE_TABLE[file_mode[5]].sub(/[x|-]$/, 'x' => 't', '-' => 'T') : MODE_TABLE[file_mode[5]]
+      ].join
     end
 
-    def format_row(data, max_nlink, max_user, max_group, max_size)
+    def format_mtime(file_stat)
+      # 更新日が半年以内かどうかによって表示を変える
+      format = Time.now - HALF_YEAR < file_stat.mtime ? '%b %e %R' : '%b %e  %Y'
+      file_stat.mtime.strftime(format)
+    end
+
+    def render_long_format_body(detailed_path_data)
+      max_sizes = { nlink: nil, user: nil, group: nil, size: nil }
+      max_sizes.each { |key, _value| find_max_size(detailed_path_data, key, max_sizes) }
+      detailed_path_data.map { |data| format_row(data, max_sizes) }
+    end
+
+    def find_max_size(detailed_path_data, key, max_sizes)
+      max_sizes[key] = detailed_path_data.map { |data| data[key].size }.max
+    end
+
+    def format_row(data, max_sizes)
       [
         data[:type],
         data[:mode],
-        "  #{data[:nlink].rjust(max_nlink)}",
-        " #{data[:user].ljust(max_user)}",
-        "  #{data[:group].ljust(max_group)}",
-        "  #{data[:size].rjust(max_size)}",
+        "  #{data[:nlink].rjust(max_sizes[:nlink])}",
+        " #{data[:user].ljust(max_sizes[:user])}",
+        "  #{data[:group].ljust(max_sizes[:group])}",
+        "  #{data[:size].rjust(max_sizes[:size])}",
         " #{data[:mtime]}",
         " #{data[:name]}"
       ].join
     end
 
-    # lオプションなし
     def list_short(path_data)
-      path_name = path_data.map(&:name)
-      result = transpose_file_paths(path_name).map { |n| n.push("\n").join }
-      puts result
+      path_names = path_data.map(&:name)
+      puts transpose_path_names(path_names).map(&:join)
     end
 
-    def format_file_paths(path_name)
-      path_name.push(' ') while path_name.size % COLUMN_NUMBER != 0
-      max_file_path_count = path_name.map(&:size).max
-      path_name.map { |n| n.ljust(max_file_path_count + 2) }
+    def format_path_names(path_names)
+      path_names.push(' ') while path_names.size % COLUMN_COUNT != 0
+      max_path_name_count = path_names.map(&:size).max
+      path_names.map { |path_name| path_name.ljust(max_path_name_count + 2) }
     end
 
-    def transpose_file_paths(path_name)
-      spaced_file_paths = format_file_paths(path_name)
-      max_number_of_rows = (path_name.size / COLUMN_NUMBER).ceil
-      paths = spaced_file_paths.each_slice(max_number_of_rows).with_object([]) { |n, m| m << n }
+    def transpose_path_names(path_names)
+      spaced_path_names = format_path_names(path_names)
+      row_count = (path_names.size.to_f / COLUMN_COUNT).ceil
+      paths = spaced_path_names.each_slice(row_count).to_a
       paths.transpose
     end
   end
