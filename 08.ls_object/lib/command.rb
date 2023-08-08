@@ -78,11 +78,38 @@ module LS
 
     def format_mode(file_mode)
       # file_modeの３桁目（特殊権限の値）に応じて、rwx文字列を変化させる
+      user_permission = change_user_permission
+      group_permission = change_group_permission
+      other_permission = change_other_permission
       [
-        file_mode[2] == '4' ? MODE_TABLE[file_mode[3]].sub(/[x|-]$/, 'x' => 's', '-' => 'S') : MODE_TABLE[file_mode[3]],
-        file_mode[2] == '2' ? MODE_TABLE[file_mode[4]].sub(/[x|-]$/, 'x' => 's', '-' => 'S') : MODE_TABLE[file_mode[4]],
-        file_mode[2] == '1' ? MODE_TABLE[file_mode[5]].sub(/[x|-]$/, 'x' => 't', '-' => 'T') : MODE_TABLE[file_mode[5]]
+        user_permission,
+        group_permission,
+        other_permission
       ].join
+    end
+
+    def change_user_permission(file_mode)
+      if file_mode[2] == '4'
+        MODE_TABLE[file_mode[3]].sub(/[x|-]$/, 'x' => 's', '-' => 'S')
+      else
+        MODE_TABLE[file_mode[3]]
+      end
+    end
+
+    def change_group_permission(file_mode)
+      if file_mode[2] == '2'
+        MODE_TABLE[file_mode[4]].sub(/[x|-]$/, 'x' => 's', '-' => 'S')
+      else
+        MODE_TABLE[file_mode[4]]
+      end
+    end
+
+    def change_other_permission(file_mode)
+      if file_mode[2] == '1'
+        MODE_TABLE[file_mode[5]].sub(/[x|-]$/, 'x' => 't', '-' => 'T')
+      else
+        MODE_TABLE[file_mode[5]]
+      end
     end
 
     def format_mtime(file_stat)
@@ -121,7 +148,7 @@ module LS
 
     def format_path_names(path_names)
       path_names.push(' ') while path_names.size % COLUMN_COUNT != 0
-      max_path_name_count = path_names.map{ |path_name| count_size(path_name) }.max
+      max_path_name_count = path_names.map(&:size).max
       path_names.map { |path_name| path_name.ljust(max_path_name_count + 2) }
     end
 
