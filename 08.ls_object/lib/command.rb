@@ -149,7 +149,9 @@ module LS
     def format_path_names(path_names)
       path_names.push(' ') while path_names.size % COLUMN_COUNT != 0
       max_path_name_count = path_names.map{ |path_name| count_size(path_name) }.max
-      path_names.map{ |path_name| path_name + ' ' * (max_path_name_count - count_size(path_name)) + '  ' }
+      spaced_path_names = path_names.map{ |path_name| path_name + ' ' * (max_path_name_count - count_size(path_name)) + '  ' }
+      row_count = (path_names.size.to_f / COLUMN_COUNT).ceil
+      paths = spaced_path_names.each_slice(row_count).to_a
     end
 
     def count_size(path_name)
@@ -157,9 +159,7 @@ module LS
     end
 
     def transpose_path_names(path_names)
-      spaced_path_names = format_path_names(path_names)
-      row_count = (path_names.size.to_f / COLUMN_COUNT).ceil
-      paths = spaced_path_names.each_slice(row_count).to_a
+      paths = format_path_names(path_names)
       paths.transpose
     end
   end
