@@ -36,14 +36,16 @@ module LS
     end
 
     def exec
-      path_data = sort_paths.map { |path| Path.new(path) }
+      sorted_paths = sort_paths
+      path_data = sorted_paths.map { |path| Path.new(path) }
       @long_format ? list_long(path_data) : list_short(path_data)
     end
 
     private
 
     def sort_paths
-      @reverse ? collect_paths.reverse : collect_paths
+      collected_paths = collect_paths
+      @reverse ? collected_paths.reverse : collected_paths
     end
 
     def collect_paths
@@ -119,7 +121,7 @@ module LS
 
     def format_path_names(path_names)
       path_names.push(' ') while path_names.size % COLUMN_COUNT != 0
-      max_path_name_count = path_names.map(&:size).max
+      max_path_name_count = path_names.map{ |path_name| count_size(path_name) }.max
       path_names.map { |path_name| path_name.ljust(max_path_name_count + 2) }
     end
 
