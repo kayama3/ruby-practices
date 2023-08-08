@@ -78,9 +78,9 @@ module LS
 
     def format_mode(file_mode)
       # file_modeの３桁目（特殊権限の値）に応じて、rwx文字列を変化させる
-      user_permission = change_user_permission
-      group_permission = change_group_permission
-      other_permission = change_other_permission
+      user_permission = change_user_permission(file_mode)
+      group_permission = change_group_permission(file_mode)
+      other_permission = change_other_permission(file_mode)
       [
         user_permission,
         group_permission,
@@ -119,13 +119,15 @@ module LS
     end
 
     def render_long_format_body(detailed_path_data)
-      max_sizes = { nlink: nil, user: nil, group: nil, size: nil }
-      max_sizes.each { |key, _value| find_max_size(detailed_path_data, key, max_sizes) }
+      max_sizes = find_max_size(detailed_path_data)
       detailed_path_data.map { |data| format_row(data, max_sizes) }
     end
 
-    def find_max_size(detailed_path_data, key, max_sizes)
-      max_sizes[key] = detailed_path_data.map { |data| data[key].size }.max
+    def find_max_size(detailed_path_data)
+      max_sizes = { nlink: nil, user: nil, group: nil, size: nil }
+      max_sizes.each do |key, _value|
+        max_sizes[key] = detailed_path_data.map { |data| data[key].size }.max
+      end
     end
 
     def format_row(data, max_sizes)
