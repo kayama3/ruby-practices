@@ -14,8 +14,7 @@ module LS
 
     def mode
       file_mode = stat.mode.to_s(8)
-      file_mode.insert(0, '0') if file_mode.size == 5
-      file_mode
+      file_mode.rjust(6, '0')
     end
   end
 end
