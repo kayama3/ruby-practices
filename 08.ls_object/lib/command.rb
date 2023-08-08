@@ -4,29 +4,6 @@ require_relative 'path'
 
 module LS
   class Command
-    TYPE_TABLE = {
-      '01' => 'p',
-      '02' => 'c',
-      '04' => 'd',
-      '06' => 'b',
-      '10' => '-',
-      '12' => 'l',
-      '14' => 's'
-    }.freeze
-
-    MODE_TABLE = {
-      '0' => '---',
-      '1' => '--x',
-      '2' => '-w-',
-      '3' => '-wx',
-      '4' => 'r--',
-      '5' => 'r-x',
-      '6' => 'rw-',
-      '7' => 'rwx'
-    }.freeze
-
-    HALF_YEAR = 15_768_000
-
     COLUMN_COUNT = 3.0
 
     def initialize(dotmatch: false, reverse: false, long_format: false)
@@ -61,61 +38,17 @@ module LS
     end
 
     def build_data(path)
-      file_stat = path.stat
-      file_mode = path.mode
       {
-        blocks: file_stat.blocks,
-        type: TYPE_TABLE[file_mode[0..1]],
-        mode: format_mode(file_mode),
-        nlink: file_stat.nlink.to_s,
-        user: Etc.getpwuid(file_stat.uid).name,
-        group: Etc.getgrgid(file_stat.gid).name,
-        size: file_stat.size.to_s,
-        mtime: format_mtime(file_stat),
+        blocks: path.blocks,
+        type: path.type,
+        mode: path.mode,
+        nlink: path.nlink,
+        user: path.user,
+        group: path.group,
+        size: path.size,
+        mtime: path.mtime,
         name: path.name
       }
-    end
-
-    def format_mode(file_mode)
-      # file_modeの３桁目（特殊権限の値）に応じて、rwx文字列を変化させる
-      user_permission = change_user_permission(file_mode)
-      group_permission = change_group_permission(file_mode)
-      other_permission = change_other_permission(file_mode)
-      [
-        user_permission,
-        group_permission,
-        other_permission
-      ].join
-    end
-
-    def change_user_permission(file_mode)
-      if file_mode[2] == '4'
-        MODE_TABLE[file_mode[3]].sub(/[x|-]$/, 'x' => 's', '-' => 'S')
-      else
-        MODE_TABLE[file_mode[3]]
-      end
-    end
-
-    def change_group_permission(file_mode)
-      if file_mode[2] == '2'
-        MODE_TABLE[file_mode[4]].sub(/[x|-]$/, 'x' => 's', '-' => 'S')
-      else
-        MODE_TABLE[file_mode[4]]
-      end
-    end
-
-    def change_other_permission(file_mode)
-      if file_mode[2] == '1'
-        MODE_TABLE[file_mode[5]].sub(/[x|-]$/, 'x' => 't', '-' => 'T')
-      else
-        MODE_TABLE[file_mode[5]]
-      end
-    end
-
-    def format_mtime(file_stat)
-      # 更新日が半年以内かどうかによって表示を変える
-      format = Time.now - HALF_YEAR < file_stat.mtime ? '%b %e %R' : '%b %e  %Y'
-      file_stat.mtime.strftime(format)
     end
 
     def render_long_format_body(detailed_path_data)
