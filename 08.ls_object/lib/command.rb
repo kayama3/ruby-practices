@@ -148,8 +148,12 @@ module LS
 
     def format_path_names(path_names)
       path_names.push(' ') while path_names.size % COLUMN_COUNT != 0
-      max_path_name_count = path_names.map(&:size).max
-      path_names.map { |path_name| path_name.ljust(max_path_name_count + 2) }
+      max_path_name_count = path_names.map{ |path_name| count_size(path_name) }.max
+      path_names.map{ |path_name| path_name + ' ' * (max_path_name_count - count_size(path_name)) + '  ' }
+    end
+
+    def count_size(path_name)
+      path_name.length + path_name.chars.reject(&:ascii_only?).length
     end
 
     def transpose_path_names(path_names)
