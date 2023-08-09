@@ -14,8 +14,8 @@ module LS
 
     def exec
       sorted_paths = sort_paths
-      path_data = sorted_paths.map { |path| Path.new(path) }
-      @long_format ? list_long(path_data) : list_short(path_data)
+      paths = sorted_paths.map { |path| Path.new(path) }
+      @long_format ? list_long(paths) : list_short(paths)
     end
 
     private
@@ -29,11 +29,11 @@ module LS
       @dotmatch ? Dir.glob('*', File::FNM_DOTMATCH) : Dir.glob('*')
     end
 
-    def list_long(path_data)
-      detailed_path_data = path_data.map { |path| build_data(path) }
-      blocks = detailed_path_data.sum { |data| data[:blocks] }
+    def list_long(paths)
+      detailed_paths = paths.map { |path| build_data(path) }
+      blocks = detailed_paths.sum { |path| path[:blocks] }
       total = "total #{blocks}"
-      body = render_long_format_body(detailed_path_data)
+      body = render_long_format_body(detailed_paths)
       puts [total, *body].join("\n")
     end
 
@@ -51,35 +51,35 @@ module LS
       }
     end
 
-    def render_long_format_body(detailed_path_data)
-      max_sizes = find_max_size(detailed_path_data)
-      detailed_path_data.map { |data| format_row(data, max_sizes) }
+    def render_long_format_body(detailed_paths)
+      max_sizes = find_max_sizes(detailed_paths)
+      detailed_paths.map { |path| format_row(path, max_sizes) }
     end
 
-    def find_max_size(detailed_path_data)
+    def find_max_sizes(detailed_paths)
       max_sizes = { nlink: nil, user: nil, group: nil, size: nil }
       max_sizes.each do |key, _value|
-        max_sizes[key] = detailed_path_data.map { |data| data[key].size }.max
+        max_sizes[key] = detailed_paths.map { |path| path[key].size }.max
       end
     end
 
-    def format_row(data, max_sizes)
+    def format_row(path, max_sizes)
       [
-        data[:type],
-        data[:mode],
-        "  #{data[:nlink].rjust(max_sizes[:nlink])}",
-        " #{data[:user].ljust(max_sizes[:user])}",
-        "  #{data[:group].ljust(max_sizes[:group])}",
-        "  #{data[:size].rjust(max_sizes[:size])}",
-        " #{data[:mtime]}",
-        " #{data[:name]}"
+        path[:type],
+        path[:mode],
+        "  #{path[:nlink].rjust(max_sizes[:nlink])}",
+        " #{path[:user].ljust(max_sizes[:user])}",
+        "  #{path[:group].ljust(max_sizes[:group])}",
+        "  #{path[:size].rjust(max_sizes[:size])}",
+        " #{path[:mtime]}",
+        " #{path[:name]}"
       ].join
     end
 
-    def list_short(path_data)
-      path_names = path_data.map(&:name)
-      paths = format_path_names(path_names)
-      puts paths.transpose.map(&:join)
+    def list_short(paths)
+      path_names = paths.map(&:name)
+      formatted_path_names = format_path_names(path_names)
+      puts formatted_path_names.transpose.map(&:join)
     end
 
     def format_path_names(path_names)
