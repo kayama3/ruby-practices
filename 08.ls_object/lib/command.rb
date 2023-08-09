@@ -81,21 +81,25 @@ module LS
       puts transpose_path_names(path_names).map(&:join)
     end
 
-    def format_path_names(path_names)
-      path_names.push(' ') while path_names.size % COLUMN_COUNT != 0
-      max_path_name_count = path_names.map{ |path_name| count_size(path_name) }.max
-      spaced_path_names = path_names.map{ |path_name| path_name + ' ' * (max_path_name_count - count_size(path_name)) + '  ' }
-      row_count = (path_names.size.to_f / COLUMN_COUNT).ceil
-      paths = spaced_path_names.each_slice(row_count).to_a
-    end
-
-    def count_size(path_name)
-      path_name.length + path_name.chars.reject(&:ascii_only?).length
-    end
-
     def transpose_path_names(path_names)
       paths = format_path_names(path_names)
       paths.transpose
+    end
+
+    def format_path_names(path_names)
+      path_names.push(' ') while path_names.size % COLUMN_COUNT != 0
+      justified_path_names = left_justify_path_names(path_names)
+      row_count = (path_names.size.to_f / COLUMN_COUNT).ceil
+      justified_path_names.each_slice(row_count).to_a
+    end
+
+    def left_justify_path_names(path_names)
+      max_path_name_count = path_names.map { |path_name| count_path_sizes(path_name) }.max
+      path_names.map { |path_name| "#{path_name + ' ' * (max_path_name_count - count_path_sizes(path_name))}  " }
+    end
+
+    def count_path_sizes(path_name)
+      path_name.length + path_name.chars.reject(&:ascii_only?).length
     end
   end
 end
