@@ -78,12 +78,8 @@ module LS
 
     def list_short(path_data)
       path_names = path_data.map(&:name)
-      puts transpose_path_names(path_names).map(&:join)
-    end
-
-    def transpose_path_names(path_names)
       paths = format_path_names(path_names)
-      paths.transpose
+      puts paths.transpose.map(&:join)
     end
 
     def format_path_names(path_names)
