@@ -13,15 +13,15 @@ module LS
     end
 
     def exec
-      sorted_paths = sort_paths
+      collected_paths = collect_paths
+      sorted_paths = sort_paths(collected_paths)
       paths = sorted_paths.map { |path| Path.new(path) }
       @long_format ? list_long(paths) : list_short(paths)
     end
 
     private
 
-    def sort_paths
-      collected_paths = collect_paths
+    def sort_paths(collected_paths)
       @reverse ? collected_paths.reverse : collected_paths
     end
 
