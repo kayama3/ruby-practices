@@ -4,7 +4,7 @@ require_relative 'path'
 
 module LS
   class Command
-    COLUMN_COUNT = 3.0
+    COLUMN_COUNT = 3
 
     def initialize(dotmatch: false, reverse: false, long_format: false)
       @dotmatch = dotmatch
