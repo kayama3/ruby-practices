@@ -33,7 +33,7 @@ module LS
       blocks = paths.sum { |path| path.blocks }
       total = "total #{blocks}"
       body = render_long_format_body(paths)
-      puts [total, *body].join("\n")
+      puts [total, *body]
     end
 
     def render_long_format_body(paths)
