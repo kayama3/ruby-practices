@@ -75,7 +75,7 @@ module LS
     end
 
     def format_path_names(path_names)
-      path_names.push(' ') while path_names.size % COLUMN_COUNT != 0
+      path_names.push('') while path_names.size % COLUMN_COUNT != 0
       justified_path_names = left_justify_path_names(path_names)
       row_count = (path_names.size.to_f / COLUMN_COUNT).ceil
       justified_path_names.each_slice(row_count).to_a
