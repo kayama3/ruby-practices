@@ -30,49 +30,36 @@ module LS
     end
 
     def list_long(paths)
-      detailed_paths = paths.map { |path| build_data(path) }
-      blocks = detailed_paths.sum { |path| path[:blocks] }
+      blocks = paths.sum { |path| path.blocks }
       total = "total #{blocks}"
-      body = render_long_format_body(detailed_paths)
+      body = render_long_format_body(paths)
       puts [total, *body].join("\n")
     end
 
-    def build_data(path)
+    def render_long_format_body(paths)
+      max_sizes = find_max_sizes(paths)
+      paths.map { |path| format_row(path, max_sizes) }
+    end
+
+    def find_max_sizes(paths)
       {
-        blocks: path.blocks,
-        type: path.type,
-        mode: path.mode,
-        nlink: path.nlink,
-        user: path.user,
-        group: path.group,
-        size: path.size,
-        mtime: path.mtime,
-        name: path.name
+        nlink: paths.map { |path| path.nlink.size }.max,
+        user: paths.map { |path| path.user.size }.max,
+        group: paths.map { |path| path.group.size }.max,
+        size: paths.map { |path| path.size.size }.max
       }
-    end
-
-    def render_long_format_body(detailed_paths)
-      max_sizes = find_max_sizes(detailed_paths)
-      detailed_paths.map { |path| format_row(path, max_sizes) }
-    end
-
-    def find_max_sizes(detailed_paths)
-      max_sizes = { nlink: nil, user: nil, group: nil, size: nil }
-      max_sizes.each do |key, _value|
-        max_sizes[key] = detailed_paths.map { |path| path[key].size }.max
-      end
     end
 
     def format_row(path, max_sizes)
       [
-        path[:type],
-        path[:mode],
-        "  #{path[:nlink].rjust(max_sizes[:nlink])}",
-        " #{path[:user].ljust(max_sizes[:user])}",
-        "  #{path[:group].ljust(max_sizes[:group])}",
-        "  #{path[:size].rjust(max_sizes[:size])}",
-        " #{path[:mtime]}",
-        " #{path[:name]}"
+        path.type,
+        path.mode,
+        "  #{path.nlink.rjust(max_sizes[:nlink])}",
+        " #{path.user.ljust(max_sizes[:user])}",
+        "  #{path.group.ljust(max_sizes[:group])}",
+        "  #{path.size.rjust(max_sizes[:size])}",
+        " #{path.mtime}",
+        " #{path.name}"
       ].join
     end
 
