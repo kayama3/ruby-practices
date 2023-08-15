@@ -65,12 +65,12 @@ module LS
 
     def list_short(paths)
       path_names = paths.map(&:name)
-      transposed_path_names = transpose_path_names(path_names)
+      formatted_path_names = format_path_names(path_names)
+      transposed_path_names = transpose_path_names(formatted_path_names)
       puts transposed_path_names.map(&:join)
     end
 
-    def transpose_path_names(path_names)
-      formatted_path_names = format_path_names(path_names)
+    def transpose_path_names(formatted_path_names)
       formatted_path_names.transpose
     end
 
