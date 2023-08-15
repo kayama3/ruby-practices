@@ -87,7 +87,7 @@ module LS
     end
 
     def count_path_sizes(path_name)
-      path_name.length + path_name.chars.count { |string| string.ascii_only? == false }
+      path_name.length + path_name.chars.count { |string| !string.ascii_only? }
     end
   end
 end
