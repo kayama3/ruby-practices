@@ -43,10 +43,10 @@ module LS
 
     def find_max_sizes(paths)
       {
-        nlink: paths.map { |path| path.nlink.size }.max,
+        nlink: paths.map { |path| path.nlink.to_s.size }.max,
         user: paths.map { |path| path.user.size }.max,
         group: paths.map { |path| path.group.size }.max,
-        size: paths.map { |path| path.size.size }.max
+        size: paths.map { |path| path.size.to_s.size }.max
       }
     end
 
@@ -54,10 +54,10 @@ module LS
       [
         path.type,
         path.mode,
-        "  #{path.nlink.rjust(max_sizes[:nlink])}",
+        "  #{path.nlink.to_s.rjust(max_sizes[:nlink])}",
         " #{path.user.ljust(max_sizes[:user])}",
         "  #{path.group.ljust(max_sizes[:group])}",
-        "  #{path.size.rjust(max_sizes[:size])}",
+        "  #{path.size.to_s.rjust(max_sizes[:size])}",
         " #{path.mtime}",
         " #{path.name}"
       ].join

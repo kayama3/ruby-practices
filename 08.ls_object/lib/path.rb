@@ -51,7 +51,7 @@ module LS
     end
 
     def nlink
-      file_stat.nlink.to_s
+      file_stat.nlink
     end
 
     def user
@@ -63,7 +63,7 @@ module LS
     end
 
     def size
-      file_stat.size.to_s
+      file_stat.size
     end
 
     def mtime
