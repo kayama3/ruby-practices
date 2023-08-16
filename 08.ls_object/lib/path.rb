@@ -40,9 +40,9 @@ module LS
     end
 
     def mode
-      user_permission = change_user_permission
-      group_permission = change_group_permission
-      other_permission = change_other_permission
+      user_permission = check_suid
+      group_permission = check_sgid
+      other_permission = check_sticky_bit
       [
         user_permission,
         group_permission,
@@ -83,7 +83,7 @@ module LS
       file_mode.rjust(6, '0')
     end
 
-    def change_user_permission
+    def check_suid
       if file_mode[2] == '4'
         MODE_TABLE[file_mode[3]].sub(/[x|-]$/, 'x' => 's', '-' => 'S')
       else
@@ -91,7 +91,7 @@ module LS
       end
     end
 
-    def change_group_permission
+    def check_sgid
       if file_mode[2] == '2'
         MODE_TABLE[file_mode[4]].sub(/[x|-]$/, 'x' => 's', '-' => 'S')
       else
@@ -99,7 +99,7 @@ module LS
       end
     end
 
-    def change_other_permission
+    def check_sticky_bit
       if file_mode[2] == '1'
         MODE_TABLE[file_mode[5]].sub(/[x|-]$/, 'x' => 't', '-' => 'T')
       else
