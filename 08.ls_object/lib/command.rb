@@ -30,7 +30,7 @@ module LS
     end
 
     def list_long(paths)
-      blocks = paths.sum { |path| path.blocks }
+      blocks = paths.sum(&:blocks)
       total = "total #{blocks}"
       body = render_long_format_body(paths)
       puts [total, *body]
