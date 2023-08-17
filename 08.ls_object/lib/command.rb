@@ -43,10 +43,10 @@ module LS
 
     def find_max_sizes(paths)
       {
-        nlink: paths.map { |path| path.nlink.to_s.size }.max,
-        user: paths.map { |path| path.user.size }.max,
-        group: paths.map { |path| path.group.size }.max,
-        size: paths.map { |path| path.size.to_s.size }.max
+        nlink: paths.map { |path| path.nlink.to_s.length }.max,
+        user: paths.map { |path| path.user.length }.max,
+        group: paths.map { |path| path.group.length }.max,
+        size: paths.map { |path| path.size.to_s.length }.max
       }
     end
 
@@ -75,9 +75,9 @@ module LS
     end
 
     def format_path_names(path_names)
-      path_names.push('') while path_names.size % COLUMN_COUNT != 0
+      path_names.push('') while path_names.length % COLUMN_COUNT != 0
       justified_path_names = left_justify_path_names(path_names)
-      row_count = (path_names.size.to_f / COLUMN_COUNT).ceil
+      row_count = (path_names.length.to_f / COLUMN_COUNT).ceil
       justified_path_names.each_slice(row_count).to_a
     end
 
