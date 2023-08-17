@@ -82,15 +82,15 @@ module LS
     end
 
     def left_justify_path_names(path_names)
-      max_path_name_count = path_names.map { |path_name| count_path_sizes(path_name) }.max
+      max_path_name_count = path_names.map { |path_name| path_name.length + count_full_byte(path_name) }.max
       path_names.map do |path_name|
-        padding_size = path_name.length + (max_path_name_count - count_path_sizes(path_name)) + 2
+        padding_size = max_path_name_count - count_full_byte(path_name) + 2
         path_name.ljust(padding_size)
       end
     end
 
-    def count_path_sizes(path_name)
-      path_name.length + path_name.chars.count { |string| !string.ascii_only? }
+    def count_full_byte(path_name)
+      path_name.chars.count { |string| !string.ascii_only? }
     end
   end
 end
