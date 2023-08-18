@@ -29,7 +29,7 @@ module LS
 
     def initialize(name)
       @name = name
-      @stat = file_stat
+      @stat = File.lstat(@name)
       @mode = file_mode
     end
 
@@ -75,10 +75,6 @@ module LS
     end
 
     private
-
-    def file_stat
-      File.lstat(@name)
-    end
 
     def file_mode
       file_mode = @stat.mode.to_s(8)
