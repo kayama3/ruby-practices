@@ -28,11 +28,11 @@ module LS
     def list_long(paths)
       blocks = paths.sum(&:blocks)
       total = "total #{blocks}"
-      body = render_long_format_body(paths)
+      body = build_long_format_body(paths)
       puts [total, *body]
     end
 
-    def render_long_format_body(paths)
+    def build_long_format_body(paths)
       max_sizes = find_max_sizes(paths)
       paths.map { |path| format_row(path, max_sizes) }
     end
