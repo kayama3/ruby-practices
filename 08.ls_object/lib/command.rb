@@ -13,10 +13,10 @@ module LS
     end
 
     def exec
-      collected_paths = collect_paths
-      sorted_paths = @reverse ? collected_paths.reverse : collected_paths
-      paths = sorted_paths.map { |path| Path.new(path) }
-      @long_format ? list_long(paths) : list_short(paths)
+      paths = collect_paths
+      sorted_paths = @reverse ? paths.reverse : paths
+      path_objects = sorted_paths.map { |path| Path.new(path) }
+      @long_format ? list_long(path_objects) : list_short(path_objects)
     end
 
     private
@@ -25,24 +25,24 @@ module LS
       @dotmatch ? Dir.glob('*', File::FNM_DOTMATCH) : Dir.glob('*')
     end
 
-    def list_long(paths)
-      blocks = paths.sum(&:blocks)
+    def list_long(path_objects)
+      blocks = path_objects.sum(&:blocks)
       total = "total #{blocks}"
-      body = build_long_format_body(paths)
+      body = build_long_format_body(path_objects)
       puts [total, *body]
     end
 
-    def build_long_format_body(paths)
-      max_sizes = find_max_sizes(paths)
-      paths.map { |path| format_row(path, max_sizes) }
+    def build_long_format_body(path_objects)
+      max_sizes = find_max_sizes(path_objects)
+      path_objects.map { |path| format_row(path, max_sizes) }
     end
 
-    def find_max_sizes(paths)
+    def find_max_sizes(path_objects)
       {
-        nlink: paths.map(&:nlink).max.to_s.length,
-        user: paths.map(&:user).max.length,
-        group: paths.map(&:group).max.length,
-        size: paths.map(&:size).max.to_s.length
+        nlink: path_objects.map(&:nlink).max.to_s.length,
+        user: path_objects.map(&:user).max.length,
+        group: path_objects.map(&:group).max.length,
+        size: path_objects.map(&:size).max.to_s.length
       }
     end
 
@@ -59,8 +59,8 @@ module LS
       ].join
     end
 
-    def list_short(paths)
-      path_names = paths.map(&:name)
+    def list_short(path_objects)
+      path_names = path_objects.map(&:name)
       formatted_path_names = format_path_names(path_names)
       puts formatted_path_names.transpose.map(&:join)
     end
