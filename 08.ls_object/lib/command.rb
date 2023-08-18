@@ -39,10 +39,10 @@ module LS
 
     def find_max_sizes(paths)
       {
-        nlink: paths.map { |path| path.nlink.to_s.length }.max,
-        user: paths.map { |path| path.user.length }.max,
-        group: paths.map { |path| path.group.length }.max,
-        size: paths.map { |path| path.size.to_s.length }.max
+        nlink: paths.map(&:nlink).max.to_s.length,
+        user: paths.map(&:user).max.length,
+        group: paths.map(&:group).max.length,
+        size: paths.map(&:size).max.to_s.length
       }
     end
 
