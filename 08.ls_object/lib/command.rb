@@ -6,6 +6,8 @@ module LS
   class Command
     COLUMN_COUNT = 3
 
+    HALF_YEAR = 15_768_000
+
     def initialize(dotmatch: false, reverse: false, long_format: false)
       @dotmatch = dotmatch
       @reverse = reverse
@@ -54,9 +56,16 @@ module LS
         " #{path.user.ljust(max_sizes[:user])}",
         "  #{path.group.ljust(max_sizes[:group])}",
         "  #{path.size.to_s.rjust(max_sizes[:size])}",
-        " #{path.mtime}",
+        "  #{format_mtime(path)}",
         " #{path.name}"
       ].join
+    end
+
+    def format_mtime(path)
+      # 更新日が半年以内かどうかによって表示を変える
+      time = path.mtime
+      format = Time.now - HALF_YEAR < time ? '%b %e %R' : '%b %e  %Y'
+      time.strftime(format)
     end
 
     def list_short(path_objects)

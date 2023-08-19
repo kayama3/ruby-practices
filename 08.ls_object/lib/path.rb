@@ -23,8 +23,6 @@ module LS
       '7' => 'rwx'
     }.freeze
 
-    HALF_YEAR = 15_768_000
-
     attr_reader :name
 
     def initialize(name)
@@ -69,9 +67,7 @@ module LS
     end
 
     def mtime
-      # 更新日が半年以内かどうかによって表示を変える
-      format = Time.now - HALF_YEAR < @stat.mtime ? '%b %e %R' : '%b %e  %Y'
-      @stat.mtime.strftime(format)
+      @stat.mtime
     end
 
     private
