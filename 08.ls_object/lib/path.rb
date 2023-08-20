@@ -40,9 +40,9 @@ module LS
     end
 
     def mode
-      user_permission = check_suid
-      group_permission = check_sgid
-      other_permission = check_sticky_bit
+      user_permission = find_user_permission
+      group_permission = find_group_permission
+      other_permission = find_other_permission
       [
         user_permission,
         group_permission,
@@ -77,7 +77,7 @@ module LS
       file_mode.rjust(6, '0')
     end
 
-    def check_suid
+    def find_user_permission
       permission = MODE_TABLE[@mode[3]]
       if @mode[2] == '4'
         permission[0, 2] + permission[2].tr('x-', 'sS')
@@ -86,7 +86,7 @@ module LS
       end
     end
 
-    def check_sgid
+    def find_group_permission
       permission = MODE_TABLE[@mode[4]]
       if @mode[2] == '2'
         permission[0, 2] + permission[2].tr('x-', 'sS')
@@ -95,7 +95,7 @@ module LS
       end
     end
 
-    def check_sticky_bit
+    def find_other_permission
       permission = MODE_TABLE[@mode[5]]
       if @mode[2] == '1'
         permission[0, 2] + permission[2].tr('x-', 'tT')
