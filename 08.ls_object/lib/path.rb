@@ -78,26 +78,29 @@ module LS
     end
 
     def check_suid
+      permission = MODE_TABLE[@mode[3]]
       if @mode[2] == '4'
-        MODE_TABLE[@mode[3]].sub(/[x|-]$/, 'x' => 's', '-' => 'S')
+        permission[0, 2] + permission[2].tr('x-', 'sS')
       else
-        MODE_TABLE[@mode[3]]
+        permission
       end
     end
 
     def check_sgid
+      permission = MODE_TABLE[@mode[4]]
       if @mode[2] == '2'
-        MODE_TABLE[@mode[4]].sub(/[x|-]$/, 'x' => 's', '-' => 'S')
+        permission[0, 2] + permission[2].tr('x-', 'sS')
       else
-        MODE_TABLE[@mode[4]]
+        permission
       end
     end
 
     def check_sticky_bit
+      permission = MODE_TABLE[@mode[5]]
       if @mode[2] == '1'
-        MODE_TABLE[@mode[5]].sub(/[x|-]$/, 'x' => 't', '-' => 'T')
+        permission[0, 2] + permission[2].tr('x-', 'tT')
       else
-        MODE_TABLE[@mode[5]]
+        permission
       end
     end
   end
