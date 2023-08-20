@@ -63,9 +63,9 @@ module LS
 
     def format_mtime(path)
       # 更新日が半年以内かどうかによって表示を変える
-      time = path.mtime
-      format = Time.now - HALF_YEAR < time ? '%b %e %R' : '%b %e  %Y'
-      time.strftime(format)
+      mtime = path.mtime
+      format = Time.now - HALF_YEAR < mtime ? '%b %e %R' : '%b %e  %Y'
+      mtime.strftime(format)
     end
 
     def list_short(path_objects)
