@@ -15,17 +15,13 @@ module LS
     end
 
     def exec
-      paths = collect_paths
+      paths = @dotmatch ? Dir.glob('*', File::FNM_DOTMATCH) : Dir.glob('*')
       sorted_paths = @reverse ? paths.reverse : paths
       path_objects = sorted_paths.map { |path| Path.new(path) }
       @long_format ? list_long(path_objects) : list_short(path_objects)
     end
 
     private
-
-    def collect_paths
-      @dotmatch ? Dir.glob('*', File::FNM_DOTMATCH) : Dir.glob('*')
-    end
 
     def list_long(path_objects)
       blocks = path_objects.sum(&:blocks)
