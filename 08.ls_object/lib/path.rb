@@ -78,27 +78,21 @@ module LS
     end
 
     def find_user_permission
-      permission = MODE_TABLE[@mode[3]]
-      if @mode[2] == '4'
-        permission[0, 2] + permission[2].tr('x-', 'sS')
-      else
-        permission
-      end
+      find_permission(3, '4', 'sS')
     end
 
     def find_group_permission
-      permission = MODE_TABLE[@mode[4]]
-      if @mode[2] == '2'
-        permission[0, 2] + permission[2].tr('x-', 'sS')
-      else
-        permission
-      end
+      find_permission(4, '2', 'sS')
     end
 
     def find_other_permission
-      permission = MODE_TABLE[@mode[5]]
-      if @mode[2] == '1'
-        permission[0, 2] + permission[2].tr('x-', 'tT')
+      find_permission(5, '1', 'tT')
+    end
+
+    def find_permission(mode_index, permission_type, character)
+      permission = MODE_TABLE[@mode[mode_index]]
+      if @mode[2] == permission_type
+        permission[0, 2] + permission[2].tr('x-', character)
       else
         permission
       end
