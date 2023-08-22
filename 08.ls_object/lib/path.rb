@@ -27,16 +27,16 @@ module LS
 
     def initialize(name)
       @name = name
-      @stat = File.lstat(@name)
-      @mode = file_mode
+      @file_stat = File.lstat(@name)
+      @file_mode = file_mode
     end
 
     def blocks
-      @stat.blocks
+      @file_stat.blocks
     end
 
     def type
-      TYPE_TABLE[@mode[0..1]]
+      TYPE_TABLE[@file_mode[0..1]]
     end
 
     def mode
@@ -51,29 +51,29 @@ module LS
     end
 
     def nlink
-      @stat.nlink
+      @file_stat.nlink
     end
 
     def user
-      Etc.getpwuid(@stat.uid).name
+      Etc.getpwuid(@file_stat.uid).name
     end
 
     def group
-      Etc.getgrgid(@stat.gid).name
+      Etc.getgrgid(@file_stat.gid).name
     end
 
     def size
-      @stat.size
+      @file_stat.size
     end
 
     def mtime
-      @stat.mtime
+      @file_stat.mtime
     end
 
     private
 
     def file_mode
-      file_mode = @stat.mode.to_s(8)
+      file_mode = @file_stat.mode.to_s(8)
       file_mode.rjust(6, '0')
     end
 
@@ -90,8 +90,8 @@ module LS
     end
 
     def find_permission(mode_index, permission_type, character)
-      permission = MODE_TABLE[@mode[mode_index]]
-      if @mode[2] == permission_type
+      permission = MODE_TABLE[@file_mode[mode_index]]
+      if @file_mode[2] == permission_type
         permission[0, 2] + permission[2].tr('x-', character)
       else
         permission
