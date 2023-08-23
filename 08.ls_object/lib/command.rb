@@ -17,30 +17,30 @@ module LS
     def exec
       paths = @dotmatch ? Dir.glob('*', File::FNM_DOTMATCH) : Dir.glob('*')
       sorted_paths = @reverse ? paths.reverse : paths
-      path_objects = sorted_paths.map { |path| Path.new(path) }
-      @long_format ? list_long(path_objects) : list_short(path_objects)
+      detailed_paths = sorted_paths.map { |path| Path.new(path) }
+      @long_format ? list_long(detailed_paths) : list_short(detailed_paths)
     end
 
     private
 
-    def list_long(path_objects)
-      blocks = path_objects.sum(&:blocks)
+    def list_long(detailed_paths)
+      blocks = detailed_paths.sum(&:blocks)
       total = "total #{blocks}"
-      body = build_long_format_body(path_objects)
+      body = build_long_format_body(detailed_paths)
       puts [total, *body]
     end
 
-    def build_long_format_body(path_objects)
-      max_sizes = find_max_sizes(path_objects)
-      path_objects.map { |path| format_row(path, max_sizes) }
+    def build_long_format_body(detailed_paths)
+      max_sizes = find_max_sizes(detailed_paths)
+      detailed_paths.map { |path| format_row(path, max_sizes) }
     end
 
-    def find_max_sizes(path_objects)
+    def find_max_sizes(detailed_paths)
       {
-        nlink: path_objects.map(&:nlink).max.to_s.length,
-        user: path_objects.map(&:user).max.length,
-        group: path_objects.map(&:group).max.length,
-        size: path_objects.map(&:size).max.to_s.length
+        nlink: detailed_paths.map(&:nlink).max.to_s.length,
+        user: detailed_paths.map(&:user).max.length,
+        group: detailed_paths.map(&:group).max.length,
+        size: detailed_paths.map(&:size).max.to_s.length
       }
     end
 
@@ -63,8 +63,8 @@ module LS
       path.mtime.strftime(format)
     end
 
-    def list_short(path_objects)
-      path_names = path_objects.map(&:name)
+    def list_short(detailed_paths)
+      path_names = detailed_paths.map(&:name)
       formatted_path_names = format_path_names(path_names)
       puts formatted_path_names.transpose.map(&:join)
     end
