@@ -28,7 +28,7 @@ module LS
     def initialize(name)
       @name = name
       @file_stat = File.lstat(@name)
-      @file_mode = file_mode
+      @file_mode = build_file_mode
     end
 
     def blocks
@@ -72,7 +72,7 @@ module LS
 
     private
 
-    def file_mode
+    def build_file_mode
       file_mode = @file_stat.mode.to_s(8)
       file_mode.rjust(6, '0')
     end
