@@ -15,32 +15,32 @@ module LS
     end
 
     def exec
-      paths = @dotmatch ? Dir.glob('*', File::FNM_DOTMATCH) : Dir.glob('*')
-      sorted_paths = @reverse ? paths.reverse : paths
-      detailed_paths = sorted_paths.map { |path| Path.new(path) }
-      @long_format ? list_long(detailed_paths) : list_short(detailed_paths)
+      path_names = @dotmatch ? Dir.glob('*', File::FNM_DOTMATCH) : Dir.glob('*')
+      sorted_path_names = @reverse ? path_names.reverse : path_names
+      paths = sorted_path_names.map { |path| Path.new(path) }
+      @long_format ? list_long(paths) : list_short(paths)
     end
 
     private
 
-    def list_long(detailed_paths)
-      blocks = detailed_paths.sum(&:blocks)
+    def list_long(paths)
+      blocks = paths.sum(&:blocks)
       total = "total #{blocks}"
-      body = build_long_format_body(detailed_paths)
+      body = build_long_format_body(paths)
       puts [total, *body]
     end
 
-    def build_long_format_body(detailed_paths)
-      max_sizes = find_max_sizes(detailed_paths)
-      detailed_paths.map { |path| format_row(path, max_sizes) }
+    def build_long_format_body(paths)
+      max_sizes = find_max_sizes(paths)
+      paths.map { |path| format_row(path, max_sizes) }
     end
 
-    def find_max_sizes(detailed_paths)
+    def find_max_sizes(paths)
       {
-        nlink: detailed_paths.map(&:nlink).max.to_s.length,
-        user: detailed_paths.map(&:user).max.length,
-        group: detailed_paths.map(&:group).max.length,
-        size: detailed_paths.map(&:size).max.to_s.length
+        nlink: paths.map(&:nlink).max.to_s.length,
+        user: paths.map(&:user).max.length,
+        group: paths.map(&:group).max.length,
+        size: paths.map(&:size).max.to_s.length
       }
     end
 
@@ -63,8 +63,8 @@ module LS
       path.mtime.strftime(format)
     end
 
-    def list_short(detailed_paths)
-      path_names = detailed_paths.map(&:name)
+    def list_short(paths)
+      path_names = paths.map(&:name)
       formatted_path_names = format_path_names(path_names)
       puts formatted_path_names.transpose.map(&:join)
     end
